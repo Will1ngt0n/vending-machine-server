@@ -4,8 +4,7 @@
   "description": "Server side project for vending machine app (project by CodeTribers for their group project)",
   "main": "index.js",
   "scripts": {
-    "postinstall": "npm run build",
-    "start": "node index.js.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
