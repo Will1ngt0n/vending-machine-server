@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors');
 const requestsHandler = require('./requests-handler')
 
-let corsOptions = { origin: '' }
+let corsOptions = { origin: false }
 app.use( (req, res, next) => {
     const allowedOrigins = [
         'http://127.0.0.1:19000',
@@ -28,6 +28,7 @@ app.use( (req, res, next) => {
     if(allowedOrigins.includes(origin)) {
         console.log('origin: ', origin);
         res.setHeader('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Origin', origin)
         corsOptions = { origin: true }
     }
 
@@ -39,6 +40,7 @@ app.use( (req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
+console.log(corsOptions);
 app.use('/requests', cors( corsOptions ), requestsHandler);
 
 app.listen(process.env.PORT || 3006, () => {
