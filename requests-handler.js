@@ -91,7 +91,7 @@ const getLastScanInfo = async(uid, time) => {
             })
         } else{
             console.log("no record");
-            dataObj = { 'userDayScanned': 0 }
+            dataObj = { 'userDayScanned': 5 }
             // dataObj['userDayScanned'] = 28
         }
     } catch (error) {
