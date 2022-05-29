@@ -2,7 +2,15 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const requestsHandler = require('./requests-handler')
+const responseHandler = require('./response-handler')
 
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./service-account.json");
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://vending-machine-8a200-default-rtdb.firebaseio.com"
+  });
 let corsOptions = { origin: false }
 app.use( (req, res, next) => {
     const allowedOrigins = [
@@ -42,7 +50,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 console.log(corsOptions);
 app.use('/requests', cors( corsOptions ), requestsHandler);
+app.use('/responses', cors( corsOptions ), responseHandler)
 
+const port = process.env.PORT || 3006;
+const host = process.env.YOUR_HOST || '0.0.0.0';
 app.listen(process.env.PORT || 3006, () => {
     console.log('server running at port 3006...');
 })

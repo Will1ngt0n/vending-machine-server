@@ -4,14 +4,7 @@ const moment = require('moment');
 const axios = require("axios").default;
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
-var admin = require("firebase-admin");
 
-var serviceAccount = require("./service-account.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://vending-machine-8a200-default-rtdb.firebaseio.com"
-});
 router.get('/:uid/:time', async(req, res) => {
     let user = undefined
     try {
@@ -28,7 +21,8 @@ router.get('/:uid/:time', async(req, res) => {
 })
 router.post('/:key/:uid/:time', async(req, res) => {
     console.log(req.params);
-    const exists = qrExists(req.params.key);
+    // const exists = qrExists(req.params.key);
+    const { exists, machineData } = await getMachineInfo(req.params.key)
     if(!exists) return res.status(404).send({ success: false, message: 'Requested machine doesn\'t exist', code: 100 });
 
     // This is where the actual code for verification with dates will go. I already installed moment in the project.
@@ -39,7 +33,7 @@ router.post('/:key/:uid/:time', async(req, res) => {
     try {
         thingspeakResult = await axios.get('https://api.thingspeak.com/apps/thinghttp/send_request?api_key=' + req.params.key)
         if(thingspeakResult) {
-            return res.status(200).send({ success: true, message: 'message was successfully sent', status: 200, code: 201 });
+            return res.status(200).send({ success: true, message: 'message was successfully sent', status: 200, code: 201, data: machineData });
         } else {
 
         }
@@ -61,6 +55,20 @@ router.post('/:key/:uid/:time', async(req, res) => {
     }
 })
 
+const getMachineInfo = async(key) => {
+    try {
+        const snapshot = await getFirestore().collection('machines').doc(key).get()
+        
+        if( !snapshot.exists ) return { exists: false, machineData: {}}
+        console.log(snapshot);
+        const machineData = snapshot.data()
+        delete machineData.metadata;
+        return { exists: true, machineData: machineData }
+    } catch (error) {
+        return { exists: false, machineData: {}}
+    }
+    
+}
 const qrExists = (key) => {
     if(key === '1DK7AVFL27SMVMIX') return true;
     return false;
@@ -130,6 +138,13 @@ const getScannerTransactionUnsuccess = async(uid) => {
     console.log(dataObj.length);
     return dataObj
 
+}
+
+const checkThingsSpeakUpdate = async() => {
+    // const link = 'https://api.thingspeak.com/apps/thinghttp/send_request?api_key=TQFFCP1P99PK5GK2';\
+    const link = 'https://api.thingspeak.com/channels/1676956/feeds.json?api_key=OXC89X35UYK2ODY0&results=2';
+    
+    
 }
 
 router.get('/', (req, res) => {
